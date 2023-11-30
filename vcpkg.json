@@ -1,0 +1,18 @@
+{
+  "name": "img-raw-proc",
+  "version": "0.1.0",
+  "dependencies": [
+    {
+      "name": "libpng",
+      "default-features": false
+    },
+    {
+      "name": "libraw",
+      "default-features": false
+    },
+    {
+      "name": "fmt",
+      "default-features": false
+    }
+  ]
+}
