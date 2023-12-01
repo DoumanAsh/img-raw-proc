@@ -29,7 +29,7 @@ static void process_folder(img::Proc& img, const fs::path& path, std::error_code
 
             //File extension always has dot so skip it
             if (args.extensions.contains(ext.c_str() + 1)) {
-                img.process_file(entry.path());
+                img.process_file(entry.path(), error_code);
             }
         } else {
             process_path(img, entry.path(), error_code, args);
@@ -53,7 +53,7 @@ static void process_path(img::Proc& img, const fs::path& path, std::error_code& 
         case fs::file_type::directory:
             return process_folder(img, path, error_code, args);
         case fs::file_type::regular:
-            img.process_file(path);
+            img.process_file(path, error_code);
             return;
         case fs::file_type::symlink: {
             fs::path actual_path;
@@ -74,7 +74,7 @@ static void process_path(img::Proc& img, const fs::path& path, std::error_code& 
 
                 switch (actual_meta.type()) {
                     case fs::file_type::regular:
-                        img.process_file(actual_path);
+                        img.process_file(actual_path, error_code);
                         return;
                     case fs::file_type::directory:
                         return process_folder(img, actual_path, error_code, args);

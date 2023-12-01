@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <system_error>
 
 #include <libraw/libraw.h>
 
@@ -12,7 +13,7 @@ class Proc {
     public:
         Proc() = default;
 
-        void process_file(const std::filesystem::path&) noexcept(true);
+        void process_file(const std::filesystem::path&, std::error_code&) noexcept(true);
 };
 
 } //img
