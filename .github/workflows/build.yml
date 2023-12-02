@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - '.github/workflows/test.yml'
+      - '.github/workflows/build.yml'
       - 'src/**'
       - 'CMakeLists.txt'
   pull_request:
@@ -13,32 +13,45 @@ on:
     branches:
       - '**'
     paths:
-      - '.github/workflows/test.yml'
+      - '.github/workflows/build.yml'
       - 'src/**'
       - 'CMakeLists.txt'
 
 jobs:
-  build-ubuntu:
+  build-linux:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
 
     steps:
     - uses: actions/checkout@v3
-
     - name: Linux requirements
       run: sudo apt-get install libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxrandr-dev libxxf86vm-dev
-
     - name: Install vcpkg
       run: |
         git clone https://github.com/Microsoft/vcpkg.git
         ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
-
     - name: Prep Cmake
       run: |
-        vcpkg install
         mkdir build
         cd build
         cmake ../ -DCMAKE_TOOLCHAIN_FILE="vcpkg/scripts/buildsystems/vcpkg.cmake"
+    - name: Build
+      run: cmake --build build/
 
+  build-x64-windows:
+    runs-on: windows-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install vcpkg
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git
+        ./vcpkg/bootstrap-vcpkg.bat -disableMetrics
+    - name: Prep Cmake
+      run: |
+        mkdir build
+        cd build
+        cmake ../ -DCMAKE_TOOLCHAIN_FILE="vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static
     - name: Build
       run: cmake --build build/
