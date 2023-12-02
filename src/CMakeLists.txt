@@ -4,10 +4,17 @@ add_executable(${CMAKE_PROJECT_NAME} ${SRC})
 find_package(libpng REQUIRED)
 find_package(libraw CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+
+if (UNIX)
+    set(PNG_LIB "png")
+else()
+    set(PNG_LIB "png_static")
+endif()
+
 target_link_libraries(
     ${CMAKE_PROJECT_NAME}
     PRIVATE
-    png
+    ${PNG_LIB}
     libraw::raw_r
     fmt::fmt-header-only
 )
