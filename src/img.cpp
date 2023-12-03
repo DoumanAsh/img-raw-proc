@@ -1,4 +1,7 @@
 #include "img.hpp"
+
+#include <fmt/core.h>
+
 #include <system_error>
 
 namespace img {
@@ -39,6 +42,19 @@ class LibRawErrorCategory: public std::error_category {
         }
 };
 
+#define PROCESS_LIBRAW_ERROR(res) \
+    if ((res) != LIBRAW_SUCCESS) {                                        \
+        if ((res) > LIBRAW_SUCCESS) {                                     \
+            error_code = std::error_code(res, std::system_category());  \
+            proc.recycle(); \
+            return; \
+        } \
+        error_code = std::error_code(res, LibRawErrorCategory()); \
+        proc.recycle(); \
+        return; \
+    }
+
+
 void Proc::process_file(const fs::path& path, std::error_code& error_code) noexcept(true) {
     #if defined(_WIN32) || defined(WIN32)
     auto res = proc.open_file(path.native().c_str());
@@ -46,19 +62,46 @@ void Proc::process_file(const fs::path& path, std::error_code& error_code) noexc
     auto res = proc.open_file(path.string().c_str());
     #endif
 
-    if (res != LIBRAW_SUCCESS) {
-        if (res > LIBRAW_SUCCESS) {
-            //errno
-            error_code = std::error_code(res, std::system_category());
-            return;
-        }
+    PROCESS_LIBRAW_ERROR(res);
 
-        //LibRaw error
-        error_code = std::error_code(res, LibRawErrorCategory());
+    fmt::println(">{}", path.string());
+    if (proc.imgdata.idata.raw_count == 0) {
+        fmt::println("!!No image data found");
         return;
     }
 
+    fmt::println(
+        "Dimensions: {}x{}\n"
+        "Camera model: {}\n"
+        "Color format: {}\n"
+        "Description: {}\n"
+        "Author: {}\n"
+        "GPS (DMS): {}°{}'{:.1f}\"{} {}°{}'{:.1f}\"{}\n",
+        proc.imgdata.sizes.width, proc.imgdata.sizes.height,
+        proc.imgdata.idata.model,
+        proc.imgdata.idata.cdesc,
+        proc.imgdata.other.desc,
+        proc.imgdata.other.artist,
+        //latitude
+        proc.imgdata.other.parsed_gps.latitude[0],
+        proc.imgdata.other.parsed_gps.latitude[1],
+        proc.imgdata.other.parsed_gps.latitude[2],
+        proc.imgdata.other.parsed_gps.latref,
+        //longitude
+        proc.imgdata.other.parsed_gps.longitude[0],
+        proc.imgdata.other.parsed_gps.longitude[1],
+        proc.imgdata.other.parsed_gps.longitude[2],
+        proc.imgdata.other.parsed_gps.longref
+    );
+
+    res = proc.unpack();
+    PROCESS_LIBRAW_ERROR(res);
+
+    res = proc.raw2image();
     //TODO
+    //Consider to use https://github.com/CarVac/librtprocess for RAW conversion to RGB
+
+    proc.recycle();
 }
 
 } //img

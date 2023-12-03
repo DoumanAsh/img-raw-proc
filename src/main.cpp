@@ -30,6 +30,11 @@ static void process_folder(img::Proc& img, const fs::path& path, std::error_code
             //File extension always has dot so skip it
             if (args.extensions.contains(ext.c_str() + 1)) {
                 img.process_file(entry.path(), error_code);
+
+                if (error_code.value() != 0) {
+                    fmt::println("{}: {}", path.string(), error_code.message());
+                    error_code.clear();
+                }
             }
         } else {
             process_path(img, entry.path(), error_code, args);
@@ -115,7 +120,7 @@ int main(int argc, char** argv) {
         process_path(img, path, error_code, args);
 
         if (error_code.value() != 0) {
-            fmt::println("{}: No such file or directory", path.string());
+            fmt::println("{}: {}", path.string(), error_code.message());
             error_code.clear();
         }
     }
