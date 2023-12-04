@@ -1,6 +1,7 @@
 #include "img.hpp"
 
 #include <fmt/core.h>
+#include <librtprocess.h>
 
 #include <system_error>
 

@@ -21,4 +21,5 @@ else()
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif()
 
+add_subdirectory("deps/")
 add_subdirectory("src/")

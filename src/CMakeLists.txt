@@ -19,6 +19,11 @@ target_link_libraries(
     fmt::fmt-header-only
 )
 
+add_dependencies(${CMAKE_PROJECT_NAME} librtprocess)
+ExternalProject_Get_property(librtprocess SOURCE_DIR)
+message("SOURCE_DIR librtprocess = ${SOURCE_DIR}")
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${SOURCE_DIR}/src/include)
+
 include(CheckIPOSupported)
 check_ipo_supported(RESULT ipo_status OUTPUT output)
 if (ipo_status)
